@@ -63,3 +63,10 @@ ship. Mute with the speaker button in the top bar.
 
 Respects `prefers-reduced-motion`: the game stays fully playable, the drama just
 stops moving.
+
+## Single-file build
+
+`node build-artifact.mjs [outPath]` bundles everything into one self-contained
+HTML file (CSS and JS inlined, card art embedded as data URIs, no external
+requests except the Google Fonts stylesheet). Output defaults to
+`dist/ronaldo-fc.html`, about 1.3 MB. Re-run it after changing any source file.

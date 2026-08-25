@@ -237,4 +237,6 @@ function boot() {
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 }
 
-document.addEventListener('DOMContentLoaded', boot);
+/* Works whether this script runs during parsing or after the DOM is ready. */
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
