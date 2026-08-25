@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07070c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RONALDO FC &mdash; Ultimate Pack Opening</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffc451'/%3E%3Ctext x='16' y='13' font-family='Arial,sans-serif' font-size='10' font-weight='bold' fill='%23241700' text-anchor='middle'%3ECR%3C/text%3E%3Ctext x='16' y='27' font-family='Arial,sans-serif' font-size='15' font-weight='bold' fill='%23241700' text-anchor='middle'%3E7%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="phone" class="phone">
+
+  <!-- ============ TOP BAR ============ -->
+  <header id="topbar" class="topbar">
+    <div class="tb-crest">
+      <span class="crest-mark">CR</span><span class="crest-num">7</span>
+    </div>
+    <div class="tb-title">
+      <div class="tb-name">RONALDO FC</div>
+      <div class="tb-sub" id="tbSub">Club Level 1</div>
+    </div>
+    <div class="tb-cur">
+      <div class="cur cur-coin"><i class="ic ic-coin"></i><span id="coinVal">0</span></div>
+      <div class="cur cur-gem"><i class="ic ic-gem"></i><span id="gemVal">0</span></div>
+    </div>
+    <button id="soundBtn" class="tb-sound" aria-label="Mute sound"><span></span></button>
+  </header>
+
+  <!-- ============ SCREENS ============ -->
+  <main id="screens" class="screens">
+
+    <!-- ---- HOME ---- -->
+    <section class="screen is-active" data-screen="home">
+      <div class="home-hero">
+        <div class="hero-glow"></div>
+        <div class="hero-label">YOUR BEST RONALDO</div>
+        <div class="hero-card" id="heroCard"></div>
+        <div class="hero-meta" id="heroMeta"></div>
+      </div>
+
+      <div class="home-stats">
+        <div class="hstat"><b id="statOwned">0</b><span>COLLECTED</span></div>
+        <div class="hstat"><b id="statTotal">0</b><span>TOTAL CARDS</span></div>
+        <div class="hstat"><b id="statPacks">0</b><span>PACKS OPENED</span></div>
+        <div class="hstat"><b id="statGoals">0</b><span>GOALS</span></div>
+      </div>
+
+      <div class="home-actions">
+        <button class="btn btn-primary" data-go="store">
+          <span class="btn-ic">&#9733;</span> OPEN A PACK
+        </button>
+        <button class="btn btn-ghost" data-go="match">
+          <span class="btn-ic">&#9917;</span> PLAY A MATCH
+        </button>
+      </div>
+
+      <div class="daily" id="dailyCard">
+        <div class="daily-l">
+          <div class="daily-t">DAILY SIU BONUS</div>
+          <div class="daily-s" id="dailyText">Claim 1,500 coins</div>
+        </div>
+        <button class="btn btn-mini" id="dailyBtn">CLAIM</button>
+      </div>
+    </section>
+
+    <!-- ---- STORE ---- -->
+    <section class="screen" data-screen="store">
+      <h2 class="sc-title">PACK STORE</h2>
+      <p class="sc-sub">Every pack is 100% Cristiano. The only question is which one.</p>
+      <div class="pack-list" id="packList"></div>
+    </section>
+
+    <!-- ---- COLLECTION ---- -->
+    <section class="screen" data-screen="collection">
+      <h2 class="sc-title">MY COLLECTION</h2>
+      <div class="coll-bar">
+        <div class="coll-prog"><span id="collProgFill"></span></div>
+        <div class="coll-txt" id="collTxt">0 / 0</div>
+      </div>
+      <div class="card-grid" id="cardGrid"></div>
+      <button class="reset-btn" id="resetBtn">Reset my club</button>
+    </section>
+
+    <!-- ---- MATCH ---- -->
+    <section class="screen" data-screen="match">
+      <h2 class="sc-title">FINISHING DRILL</h2>
+      <p class="sc-sub">Stop the marker in the green zone. Ronaldo does the rest.</p>
+      <div class="match-wrap" id="matchWrap"></div>
+    </section>
+
+  </main>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav id="nav" class="nav">
+    <button class="nav-b is-active" data-go="home"><i class="ni ni-home"></i><span>Home</span></button>
+    <button class="nav-b" data-go="store"><i class="ni ni-store"></i><span>Store</span></button>
+    <button class="nav-b" data-go="collection"><i class="ni ni-cards"></i><span>Cards</span></button>
+    <button class="nav-b" data-go="match"><i class="ni ni-ball"></i><span>Play</span></button>
+  </nav>
+
+  <!-- ============ PACK OPENING OVERLAY ============ -->
+  <div id="packScene" class="pack-scene" aria-hidden="true">
+    <div class="ps-bg"></div>
+    <div class="ps-vignette"></div>
+    <div class="ps-rays"></div>
+    <div class="ps-rays ps-rays-2"></div>
+    <div class="ps-beam"></div>
+    <div class="ps-particles" id="psParticles"></div>
+    <div class="ps-confetti" id="psConfetti"></div>
+
+    <div class="ps-packstage" id="psPackStage">
+      <div class="ps-pack" id="psPack">
+        <div class="ps-pack-face">
+          <div class="ps-pack-shine"></div>
+          <div class="ps-pack-crest"><span>CR</span><b>7</b></div>
+          <div class="ps-pack-name" id="psPackName">GOLD PACK</div>
+          <div class="ps-pack-tag">RONALDO FC</div>
+        </div>
+        <div class="ps-pack-glow"></div>
+      </div>
+    </div>
+
+    <div class="ps-cardstage" id="psCardStage">
+      <div class="ps-walkout" id="psWalkout">WALKOUT</div>
+      <div class="ps-card" id="psCard">
+        <div class="ps-card-inner">
+          <div class="ps-card-back">
+            <div class="pcb-crest"><span>CR</span><b>7</b></div>
+            <div class="pcb-lines"></div>
+          </div>
+          <div class="ps-card-front">
+            <img id="psCardImg" alt="Ronaldo card">
+            <div class="ps-card-halo"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ps-info" id="psInfo">
+        <div class="ps-ovr"><b id="psOvr">0</b><span id="psPos">ST</span></div>
+        <div class="ps-title" id="psTitle"></div>
+        <div class="ps-stats" id="psStats"></div>
+        <div class="ps-badge" id="psBadge">NEW</div>
+      </div>
+    </div>
+
+    <div class="ps-counter" id="psCounter"></div>
+    <div class="ps-hint" id="psHint">TAP TO OPEN</div>
+    <div class="ps-flash" id="psFlash"></div>
+
+    <!-- summary -->
+    <div class="ps-summary" id="psSummary">
+      <h3>PACK RESULTS</h3>
+      <div class="ps-sum-grid" id="psSumGrid"></div>
+      <div class="ps-sum-reward" id="psSumReward"></div>
+      <button class="btn btn-primary" id="psDone">CONTINUE</button>
+    </div>
+  </div>
+
+  <!-- ============ TOAST ============ -->
+  <div id="toast" class="toast"></div>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/packs.js"></script>
+<script src="js/match.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
