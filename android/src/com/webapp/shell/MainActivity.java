@@ -1,4 +1,4 @@
-package com.rockstarshop.store;
+package com.webapp.shell;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -12,16 +12,18 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
- * Hosts the Rockstar Shop storefront in a WebView.
+ * Hosts a bundled web app in a full-screen WebView.
  *
- * The whole store (HTML, CSS, JS and cover art) ships inside the APK under
- * assets/www, so the app never touches the network and declares no network
- * permission. The cart persists through the WebView's DOM storage.
+ * The app's HTML, CSS, JS and art ship inside the APK under assets/www, so
+ * nothing here touches the network and no network permission is declared.
+ * DOM storage is on, so pages can persist state between launches.
+ *
+ * BACKGROUND is rewritten per app by android/build.sh from the app's config.
  */
 public class MainActivity extends Activity {
 
-    private static final String STORE_URL = "file:///android_asset/www/index.html";
-    private static final int BACKGROUND = 0xFF0D0D10;   // --bg in styles.css
+    private static final String APP_URL = "file:///android_asset/www/index.html";
+    private static final int BACKGROUND = @APP_BG@;
 
     private WebView web;
 
@@ -38,7 +40,7 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
-        s.setDomStorageEnabled(true);          // app.js keeps the cart in localStorage
+        s.setDomStorageEnabled(true);          // pages persist state via localStorage
         s.setAllowFileAccess(true);
         s.setTextZoom(100);                    // ignore the system font scale
         s.setSupportZoom(false);
@@ -56,7 +58,7 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
         } else {
-            web.loadUrl(STORE_URL);
+            web.loadUrl(APP_URL);
         }
     }
 

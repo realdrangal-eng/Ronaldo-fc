@@ -1,23 +1,33 @@
-# Rockstar Shop — Android build
+# Android builds
 
-Packages the storefront in [`rockstar-shop/`](../rockstar-shop) into an
-installable APK. The store runs in a full-screen `WebView`; the HTML, CSS, JS
-and cover art are bundled inside the APK, so the app works with no network and
-requests **no permissions at all**.
+Packages a bundled web app into an installable APK. The app runs in a
+full-screen `WebView`; its HTML, CSS, JS and art are bundled inside the APK, so
+it works with no network and requests **no permissions at all**.
+
+Two apps are configured, described by the files in [`apps/`](apps):
+
+| App | Source | Package | APK |
+| --- | --- | --- | --- |
+| `gta6` | [`gta6/`](../gta6) — GTA VI: Vice Beach | `com.vicebeach.game` | `vice-beach.apk` |
+| `rockstar-shop` | [`rockstar-shop/`](../rockstar-shop) — the storefront | `com.rockstarshop.store` | `rockstar-shop.apk` |
 
 ## Build
 
 ```bash
-./android/build.sh
-# -> android/build/rockstar-shop.apk
+./android/build.sh gta6            # -> android/build/vice-beach.apk
+./android/build.sh rockstar-shop   # -> android/build/rockstar-shop.apk
 ```
+
+`gta6` is the default when no app is named. To add another, drop a `.conf` in
+`apps/` naming the source directory, package id, label and icon — the WebView
+shell in `src/` is shared.
 
 First run downloads the toolchain (~30 MB) into `android/.tools/` and caches it.
 
 Install on a device with USB debugging on:
 
 ```bash
-adb install -r android/build/rockstar-shop.apk
+adb install -r android/build/vice-beach.apk
 ```
 
 or copy the APK to the phone and open it (needs "install unknown apps").
@@ -58,36 +68,38 @@ Debug builds use a throwaway keystore at `android/.tools/debug.p12` (untracked,
 created on first build). For a real signing key:
 
 ```bash
-./android/build.sh --release my-key.p12 storepass alias keypass
+./android/build.sh gta6 --release my-key.p12 storepass alias keypass
 ```
 
 ## Layout
 
 ```
 android/
-  AndroidManifest.xml          package, SDK levels, launcher activity
-  build.sh                     the whole build
-  res/values/strings.xml       app name
-  res/mipmap-*/                launcher icons (generated from the Rockstar logo)
-  src/com/rockstarshop/store/  MainActivity — the WebView host
-  tools/make-icons.mjs         renders the launcher icons
-  tools/package-apk.py         DEX insertion, arsc storage, zip alignment
-  tools/ApkSign.java           v2 signing via apksig
-  tools/ApkVerify.java         signature verification via apksig
+  AndroidManifest.template.xml  manifest template (@APP_PKG@, @APP_ORIENTATION@)
+  apps/*.conf                   per-app: source dir, package, label, icon
+  build.sh                      the whole build
+  src/com/webapp/shell/         MainActivity — the shared WebView host
+  tools/make-icons.mjs          renders the launcher icons
+  tools/package-apk.py          DEX insertion, arsc storage, zip alignment
+  tools/ApkSign.java            v2 signing via apksig
+  tools/ApkVerify.java          signature verification via apksig
 ```
+
+The manifest, `strings.xml`, launcher icons and the shell's background colour
+are generated into `android/build/` from the chosen app config, so nothing
+app-specific is checked in outside `apps/`.
 
 `android/.tools/` (downloaded toolchain) and `android/build/` (output) are
 untracked.
 
-## App details
+## Both apps
 
 | | |
 | --- | --- |
-| Package | `com.rockstarshop.store` |
-| Label | Rockstar Shop |
-| min / target SDK | 24 / 34 |
+| min / target SDK | 24 (Android 7.0) / 34 |
 | Permissions | none |
-| APK size | ~2.3 MB |
+| Vice Beach APK | ~300 KB |
+| Rockstar Shop APK | ~2.3 MB |
 
-The cart persists between launches through the WebView's DOM storage, and the
+Pages persist state between launches through the WebView's DOM storage, and the
 hardware back button walks WebView history before leaving the app.

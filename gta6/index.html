@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e0b18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GTA VI &mdash; Vice Beach</title>
+<link rel="icon" href="assets/cover.jpg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- ============================ HUD ============================ -->
+<div id="hud" class="hud">
+  <div class="hud-top">
+    <canvas id="minimap" width="150" height="150"></canvas>
+
+    <div class="hud-right">
+      <div id="cash" class="cash">$0</div>
+      <div id="stars" class="stars">☆☆☆☆☆</div>
+      <button id="btnPause" class="pause-btn" aria-label="Pause">II</button>
+    </div>
+  </div>
+
+  <div id="mission" class="mission">
+    <div class="m-head">
+      <span id="missionTitle">MISSION</span>
+      <span id="missionTimer" class="m-timer">00:00</span>
+    </div>
+    <div id="missionDesc" class="m-desc"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div class="hud-bottom">
+    <div class="bars">
+      <div class="bar"><i id="healthFill" class="fill hp"></i></div>
+      <div class="bar" id="armorWrap"><i id="armorFill" class="fill ar"></i></div>
+    </div>
+    <div id="speedWrap" class="speedo">
+      <b id="speed">0</b><span>km/h</span>
+    </div>
+  </div>
+
+  <!-- touch controls -->
+  <div id="touchUi" class="touch">
+    <div id="stickBase" class="stick"><i id="stickNub" class="nub"></i></div>
+    <div class="pad">
+      <button id="btnEnter" class="tbtn enter">GET<br>IN</button>
+      <button id="btnBrake" class="tbtn brake">BRAKE</button>
+      <button id="btnFire" class="tbtn fire">FIRE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================== TITLE ============================ -->
+<div id="title" class="screen on">
+  <div class="cover">
+    <img src="assets/cover.jpg" alt="Grand Theft Auto VI">
+  </div>
+  <div class="title-copy">
+    <p class="kicker">Welcome to Leonida</p>
+    <h1>VICE BEACH</h1>
+    <p class="blurb">
+      Steal anything with wheels, run the drops, and lose the cops in the neon.
+    </p>
+    <button id="btnPlay" class="btn">START</button>
+    <div class="controls">
+      <div><b>WASD</b> drive / walk</div>
+      <div><b>Mouse</b> aim · <b>Click</b> shoot</div>
+      <div><b>F</b> get in / out of a car</div>
+      <div><b>Space</b> handbrake · <b>Esc</b> pause</div>
+    </div>
+    <p class="legal">Fan-made tribute. Not affiliated with Rockstar Games.</p>
+  </div>
+</div>
+
+<!-- ========================== WASTED =========================== -->
+<div id="wasted" class="screen dim">
+  <h2 class="wasted-word">WASTED</h2>
+  <p id="wastedStats" class="wasted-stats"></p>
+  <button id="btnRespawn" class="btn">RESPAWN</button>
+</div>
+
+<!-- ========================== PAUSE ============================ -->
+<div id="pause" class="screen dim">
+  <h2 class="pause-word">PAUSED</h2>
+  <button id="btnResume" class="btn">RESUME</button>
+  <button id="btnQuit" class="btn ghost">QUIT TO TITLE</button>
+</div>
+
+<script src="js/util.js"></script>
+<script src="js/city.js"></script>
+<script src="js/vehicles.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script>
+  Game.boot(document.getElementById('game'));
+</script>
+</body>
+</html>

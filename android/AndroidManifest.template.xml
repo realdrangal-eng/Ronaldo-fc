@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Template. android/build.sh substitutes @APP_PKG@ and @APP_ORIENTATION@
+     from the selected app config in android/apps/ and writes the result to
+     android/build/AndroidManifest.xml. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.rockstarshop.store"
+    package="@APP_PKG@"
     android:versionCode="1"
     android:versionName="1.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
-    <!-- The storefront is fully offline: no INTERNET permission is requested. -->
+    <!-- Fully offline: no INTERNET permission is requested. -->
 
     <supports-screens
         android:smallScreens="true"
@@ -24,8 +27,9 @@
         android:theme="@android:style/Theme.Black.NoTitleBar">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.webapp.shell.MainActivity"
             android:exported="true"
+            android:screenOrientation="@APP_ORIENTATION@"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|density|smallestScreenSize">
             <intent-filter>

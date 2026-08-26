@@ -1,8 +1,7 @@
 /**
- * Renders the launcher icon at every mipmap density from the Rockstar logo
- * that ships with the storefront.
+ * Renders the launcher icon at every mipmap density from one source image.
  *
- * Usage: node android/tools/make-icons.mjs <res-dir> <logo.png>
+ * Usage: node android/tools/make-icons.mjs <res-dir> <image> [bgColor] [fit]
  */
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -23,9 +22,9 @@ async function loadPlaywright() {
 const pw = await loadPlaywright();
 const chromium = pw.chromium ?? pw.default?.chromium;   // CJS interop
 
-const [out, logoPath] = process.argv.slice(2);
+const [out, logoPath, bg = '#111118', fit = 'cover'] = process.argv.slice(2);
 if (!out || !logoPath) {
-  console.error('usage: make-icons.mjs <res-dir> <logo.png>');
+  console.error('usage: make-icons.mjs <res-dir> <image> [bgColor] [fit]');
   process.exit(1);
 }
 
@@ -37,16 +36,17 @@ const DENSITIES = [
   ['mipmap-xxxhdpi', 192]
 ];
 
-const logo = `data:image/png;base64,${readFileSync(logoPath).toString('base64')}`;
+const mime = logoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+const logo = `data:${mime};base64,${readFileSync(logoPath).toString('base64')}`;
 
-// The source logo is already a gold rounded square; sit it on a matching gold
-// field so the icon fills its mask cleanly at every density.
+// Rounded-square mask on a solid field, so the icon fills its shape cleanly
+// at every density whatever the source image's aspect ratio is.
 const icon = size => `
 <html><head><meta charset="utf-8"><style>
   html,body{margin:0;padding:0;background:transparent}
   .icon{width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.22)}px;
-        background:#fcaf17;display:flex;align-items:center;justify-content:center;overflow:hidden}
-  .icon img{width:100%;height:100%;object-fit:cover;display:block}
+        background:${bg};display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .icon img{width:100%;height:100%;object-fit:${fit};display:block}
 </style></head><body>
   <div class="icon"><img src="${logo}" alt=""></div>
 </body></html>`;
