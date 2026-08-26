@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rockstar Shop</title>
+<link rel="icon" href="assets/rockstar-logo.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#">
+    <img src="assets/rockstar-logo.png" alt="Rockstar Games">
+    <span>ROCKSTAR<em>SHOP</em></span>
+  </a>
+  <nav class="nav">
+    <a href="#store">Store</a>
+    <a href="#games">Games</a>
+    <a href="#support">Support</a>
+  </nav>
+  <button class="cart-btn" id="cartBtn" aria-label="Open cart">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M6 6h15l-1.6 8.4a2 2 0 0 1-2 1.6H9.3a2 2 0 0 1-2-1.7L5.6 4.6A1 1 0 0 0 4.6 3.8H2.5"
+        fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="10" cy="20" r="1.6" fill="currentColor"/>
+      <circle cx="18" cy="20" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<section class="hero">
+  <img class="hero-bg" src="assets/gta6-hero.jpg" alt="">
+  <div class="hero-inner">
+    <p class="eyebrow">Now on Rockstar Shop</p>
+    <h1>Grand Theft Auto VI</h1>
+    <p class="hero-sub">Vice City returns. Pre-purchase the biggest open world Rockstar has ever built.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" data-add="gta6">Buy now — $14.99</button>
+      <a class="btn btn-ghost" href="#store">Browse store</a>
+    </div>
+  </div>
+</section>
+
+<main id="store" class="wrap">
+  <div class="section-head">
+    <h2>Featured Games</h2>
+    <p>Digital editions. Instant delivery to your Rockstar Games account.</p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <section id="games" class="promo">
+    <img src="assets/gta5-hero.jpg" alt="Grand Theft Auto V artwork">
+    <div class="promo-copy">
+      <h3>Three cities. One criminal empire.</h3>
+      <p>Grand Theft Auto V: Premium Online Edition bundles the full story campaign plus
+         GTA Online, with the Criminal Enterprise Starter Pack included.</p>
+      <button class="btn btn-primary" data-add="gta5">Add to cart — $9.99</button>
+    </div>
+  </section>
+</main>
+
+<footer id="support">
+  <div class="wrap foot-inner">
+    <img src="assets/rockstar-logo.png" alt="Rockstar Games">
+    <p>Fan-made demo storefront. Not affiliated with Rockstar Games. All artwork belongs to its owners.</p>
+  </div>
+</footer>
+
+<!-- Cart drawer -->
+<div class="overlay" id="overlay" hidden></div>
+<aside class="cart" id="cart" hidden aria-label="Shopping cart">
+  <div class="cart-head">
+    <h3>Your Cart</h3>
+    <button class="icon-btn" id="closeCart" aria-label="Close cart">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="totals">
+      <span>Total</span>
+      <strong id="cartTotal">$0.00</strong>
+    </div>
+    <button class="btn btn-primary full" id="checkout">Checkout</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
