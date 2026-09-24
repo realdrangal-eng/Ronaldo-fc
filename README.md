@@ -100,3 +100,22 @@ plus a card that opens Небесный ас:
   power-ups (wide paddle, three balls, slow ball, extra life).
 
 Wins and best scores are kept in `localStorage`.
+
+## Песчаный штурм
+
+`shooter/index.html` is a separate first-person shooter in the spirit of
+round-based tactical shooters, built with Three.js (r128, loaded from cdnjs).
+You play a special-forces soldier clearing a desert town of bots.
+
+- Rounds: 5 s freeze and buy time, 1:55 to eliminate every bot. First to 5
+  round wins takes the match. Bots per round grow from 3 to 6 and get faster
+  and more accurate.
+- Economy: $800 start, kill rewards per weapon, $3250 for a round win and
+  $1900 for a loss. Buy an SMG, an AK, a scoped sniper rifle, a vest or a vest
+  and helmet. Dying loses your main weapon and armour.
+- Bots patrol with A* on the map grid, react to line of sight and gunfire,
+  strafe while shooting and hunt your last known position.
+- HUD with a rotating radar, kill feed, damage direction, hit markers and
+  recoil and spread that grow while moving or spraying.
+- Desktop: mouse (pointer lock) and WASD. Phones: left-side joystick,
+  drag the right side to aim, on-screen buttons. Landscape recommended.
