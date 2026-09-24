@@ -84,3 +84,19 @@ the mouse, arrows/WASD) and the plane fires on its own.
 - Pickups: P (guns, up to 5 levels with homing missiles), S (shield), B (bomb),
   + (extra life), ★ (medal points). Chained kills build a ×8 combo.
 - Sound is synthesised with WebAudio; best score is kept in `localStorage`.
+
+## Аркада
+
+`arcade/index.html` is a game hub with four more mobile games in one file,
+plus a card that opens Небесный ас:
+
+- **Футбол** — top-down 1v1 with AI goalkeepers, a two-minute match against
+  the computer. Drag anywhere for a virtual joystick, tap УДАР to shoot.
+- **Пинг-понг** — first to 7, three AI levels or two players on one phone
+  (each takes a half of the table). Hitting with the paddle edge adds angle.
+- **Змейка** — classic snake with swipe controls and a short-lived golden
+  apple worth 5.
+- **Кирпичи** — breakout with five layouts, two-hit silver bricks and
+  power-ups (wide paddle, three balls, slow ball, extra life).
+
+Wins and best scores are kept in `localStorage`.
