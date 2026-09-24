@@ -70,3 +70,17 @@ stops moving.
 HTML file (CSS and JS inlined, card art embedded as data URIs, no external
 requests except the Google Fonts stylesheet). Output defaults to
 `dist/ronaldo-fc.html`, about 1.3 MB. Re-run it after changing any source file.
+
+## Bonus: Небесный ас
+
+`plane/index.html` is a separate, self-contained arcade shooter: a vertical
+scroller over a sunset sea. Open the file in a browser, drag a finger (or use
+the mouse, arrows/WASD) and the plane fires on its own.
+
+- Four enemy types: fighter squadrons, zig-zag planes, bombers that shoot back
+  and kamikaze jets that lock on before diving.
+- Every level ends with a flying-fortress boss with its own bullet patterns and
+  a rage phase below half health.
+- Pickups: P (guns, up to 5 levels with homing missiles), S (shield), B (bomb),
+  + (extra life), ★ (medal points). Chained kills build a ×8 combo.
+- Sound is synthesised with WebAudio; best score is kept in `localStorage`.
