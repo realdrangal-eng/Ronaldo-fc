@@ -475,3 +475,23 @@ html, body {
   .pick-name { font-size: 23px; }
   .pick-blurb { font-size: 12px; }
 }
+
+/* ------------------------------------------------ альбомная ориентация -- */
+
+/* На лежащем телефоне высоты не хватает — меню прижимаются к верху
+   и скроллятся, иначе центрирование обрезало бы верх без шанса доскроллить. */
+@media (max-height: 560px) {
+  .screen { overflow-y: auto; }
+  #picker,
+  #title {
+    justify-content: flex-start;
+    align-content: flex-start;
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+  #title { align-items: flex-start; }
+  .cover img { width: min(200px, 30vw); }
+  .pick { padding: 14px; gap: 6px; }
+  .pick-name { font-size: 22px; }
+  .pick-blurb { font-size: 12px; }
+}
