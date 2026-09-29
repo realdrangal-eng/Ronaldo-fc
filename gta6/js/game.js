@@ -61,7 +61,8 @@ const Game = {
     this.canvas.width = Math.floor(this.w * dpr);
     this.canvas.height = Math.floor(this.h * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    this.scale = clamp(Math.min(this.w, this.h) / 480, 0.70, 1.15);
+    this.baseScale = clamp(Math.min(this.w, this.h) / 480, 0.70, 1.15);
+    this.scale = this.baseScale;
   },
 
   reset() {
@@ -230,8 +231,11 @@ const Game = {
   /* -------------------------------------------------------------- loop --- */
 
   frame(now) {
-    const dt = Math.min((now - this.last) / 1000, 0.05);
+    let dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
+    if (this.cheats && this.cheats.on('slowmo')) {
+      dt *= this.cheats.val('slowmo', 'scale', 0.5);
+    }
     this.dt = dt;
     if (this.state === 'play') {
       this.time += dt;
@@ -338,9 +342,11 @@ const Game = {
     } else if (p.vehicle) {
       const v = p.vehicle;
       v.speedMul = (C && C.on('speed')) ? C.val('speed', 'car', 1) : 1;
-      v.throttle = -inp.y;                 // up = forward
-      v.steer = inp.x;
-      v.brake = Input.brake;
+      if (!(C && C.autopilot && C.autopilot(dt))) {
+        v.throttle = -inp.y;               // up = forward
+        v.steer = inp.x;
+        v.brake = Input.brake;
+      }
       p.x = v.x;
       p.y = v.y;
       p.angle = v.angle;
@@ -450,12 +456,18 @@ const Game = {
     if (b.owner === 'player') {
       for (const ped of this.peds) {
         if (ped.dead) continue;
-        if (dist(b.x, b.y, ped.x, ped.y) < ped.r + 4) { ped.hit(b.dmg, this); b.dead = true; return; }
+        if (dist(b.x, b.y, ped.x, ped.y) < ped.r + 4) {
+          ped.hit(b.dmg, this);
+          b.dead = true;
+          if (this.cheats) this.cheats.hitmark(b.x, b.y);
+          return;
+        }
       }
       for (const v of this.vehicles) {
         if (v.dead || v.driver === 'player') continue;
         if (dist(b.x, b.y, v.x, v.y) < v.r + 3) {
           v.damage(b.dmg * 0.55);
+          if (this.cheats) this.cheats.hitmark(b.x, b.y);
           this.particles.push(new Particle(b.x, b.y, rand(-60, 60), rand(-60, 60), 0.25, '#ffd86b', 2));
           b.dead = true;
           if (v.dead) this.boom(v.x, v.y);

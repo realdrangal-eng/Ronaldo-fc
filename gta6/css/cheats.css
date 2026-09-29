@@ -386,3 +386,10 @@
     transform: translateX(-50%);
   }
 }
+
+/* Кино-режим: прячем интерфейс для чистых кадров; тач-пад и кнопку
+   клиента оставляем, иначе с телефона не выйти из режима. */
+.hud.cinema .hud-top,
+.hud.cinema .hud-bottom,
+.hud.cinema .mission,
+.hud.cinema .toast { display: none; }

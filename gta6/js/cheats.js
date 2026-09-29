@@ -44,6 +44,19 @@ const CHEAT_MODULES = [
     { id: 'mode', name: 'Режим', type: 'mode', options: ['Точка', 'Кружочек', 'Крест'], value: 'Крест' },
     { id: 'size', name: 'Размер', type: 'slider', min: 2, max: 20, step: 1, value: 8 }
   ]},
+  { id: 'rainbow', name: 'Радуга', cat: 'visuals', settings: [
+    { id: 'speed', name: 'Скорость', type: 'slider', min: 10, max: 200, step: 5, value: 60 }
+  ]},
+  { id: 'trail', name: 'Неоновый след', cat: 'visuals', settings: [
+    { id: 'time', name: 'Длина', type: 'slider', min: 0.3, max: 2.5, step: 0.1, value: 1.2 },
+    { id: 'mode', name: 'Цвет', type: 'mode', options: ['Тема', 'Радуга'], value: 'Радуга' }
+  ]},
+  { id: 'zoom', name: 'Зум камеры', cat: 'visuals', settings: [
+    { id: 'factor', name: 'Приближение', type: 'slider', min: 0.5, max: 1.8, step: 0.05, value: 1 }
+  ]},
+  { id: 'cinema', name: 'Кино-режим', cat: 'visuals', settings: [
+    { id: 'bars', name: 'Чёрные полосы', type: 'bool', value: true }
+  ]},
   { id: 'watermark', name: 'Инфо панель', cat: 'visuals', on: true, settings: [
     { id: 'fps',    name: 'FPS',      type: 'bool', value: true },
     { id: 'coords', name: 'Коорды',   type: 'bool', value: true },
@@ -67,6 +80,9 @@ const CHEAT_MODULES = [
     { id: 'count',  name: 'Пуль',   type: 'slider', min: 2, max: 12, step: 1, value: 5 },
     { id: 'spread', name: 'Разброс', type: 'slider', min: 0, max: 0.6, step: 0.02, value: 0.18 }
   ]},
+  { id: 'hitmarker', name: 'Хитмаркеры', cat: 'combat', settings: [
+    { id: 'size', name: 'Размер', type: 'slider', min: 4, max: 16, step: 1, value: 8 }
+  ]},
   { id: 'killaura', name: 'Kill Aura', cat: 'combat', settings: [
     { id: 'range',  name: 'Радиус',   type: 'slider', min: 40, max: 300, step: 5, value: 130 },
     { id: 'rate',   name: 'Интервал', type: 'slider', min: 0.1, max: 1.5, step: 0.05, value: 0.4 },
@@ -80,6 +96,9 @@ const CHEAT_MODULES = [
   ]},
   { id: 'noclip', name: 'Без стен', cat: 'movement', settings: [] },
   { id: 'teleport', name: 'Телепорт (ПКМ)', cat: 'movement', settings: [] },
+  { id: 'autopilot', name: 'Автопилот', cat: 'movement', settings: [
+    { id: 'speed', name: 'Крейсер', type: 'slider', min: 80, max: 260, step: 5, value: 170 }
+  ]},
   { id: 'grip', name: 'Прилипание', cat: 'movement', settings: [
     { id: 'power', name: 'Сцепление', type: 'slider', min: 0, max: 1, step: 0.05, value: 0.8 }
   ]},
@@ -90,6 +109,9 @@ const CHEAT_MODULES = [
     { id: 'rate', name: 'Скорость', type: 'slider', min: 1, max: 60, step: 1, value: 25 }
   ]},
   { id: 'nowanted', name: 'Нет розыска', cat: 'player', settings: [] },
+  { id: 'magnet', name: 'Магнит лута', cat: 'player', settings: [
+    { id: 'range', name: 'Радиус', type: 'slider', min: 60, max: 600, step: 10, value: 260 }
+  ]},
   { id: 'automoney', name: 'AutoMoney', cat: 'player', settings: [
     { id: 'speed', name: 'Скорость полёта', type: 'slider', min: 150, max: 900, step: 10, value: 450 },
     { id: 'rob',   name: 'Грабить прохожих', type: 'bool', value: true }
@@ -105,6 +127,16 @@ const CHEAT_MODULES = [
     { id: 'type',  name: 'Тип',  type: 'mode',
       options: ['sports', 'police', 'suv', 'van', 'taxi', 'bike'], value: 'sports' },
     { id: 'spawn', name: 'Создать', type: 'button', label: 'СПАВН' }
+  ]},
+  { id: 'rain', name: 'Дождь', cat: 'world', settings: [
+    { id: 'power', name: 'Сила', type: 'slider', min: 0.2, max: 1, step: 0.05, value: 0.6 }
+  ]},
+  { id: 'daytime', name: 'Время суток', cat: 'world', settings: [
+    { id: 'hour', name: 'Время', type: 'slider', min: 0, max: 24, step: 0.5, value: 19 },
+    { id: 'auto', name: 'Идут часы', type: 'bool', value: false }
+  ]},
+  { id: 'slowmo', name: 'Слоумо', cat: 'world', settings: [
+    { id: 'scale', name: 'Скорость мира', type: 'slider', min: 0.2, max: 1, step: 0.05, value: 0.5 }
   ]},
   { id: 'freeze', name: 'Заморозить NPC', cat: 'world', settings: [] },
   { id: 'chaos', name: 'Хаос', cat: 'world', settings: [] },
@@ -440,6 +472,11 @@ const Cheats = {
   onToggle(m) {
     const g = this.game;
     if (m.id === 'traffic' && !m.on) g.trafficCap = null;
+    if (m.id === 'autopilot') this._apOn = false;
+    if (m.id === 'cinema') {
+      const hud = document.getElementById('hud');
+      if (hud) hud.classList.toggle('cinema', m.on);
+    }
     g.say((m.on ? '+ ' : '- ') + m.name, 1100);
   },
 
@@ -502,9 +539,91 @@ const Cheats = {
       v.vy = fy * fwd + fx * lat;
     }
 
+    // --- зум камеры: масштаб пересчитывается от базового ---
+    g.scale = g.baseScale * (this.on('zoom') ? this.val('zoom', 'factor', 1) : 1);
+
+    // --- радуга: акцент клиента плывёт по кругу оттенков ---
+    if (this.on('rainbow')) {
+      if (this._rainbowSaved == null) this._rainbowSaved = this.accent;
+      this._hue = ((this._hue || 0) + this.val('rainbow', 'speed', 60) * dt) % 360;
+      this.accent = hsvToCss(this._hue, 0.65, 0.95);
+      this.root.style.setProperty('--cg-accent', this.accent);
+    } else if (this._rainbowSaved != null) {
+      this.accent = this._rainbowSaved;
+      this._rainbowSaved = null;
+      this.root.style.setProperty('--cg-accent', this.accent);
+    }
+
+    // --- неоновый след за игроком или машиной ---
+    if (this.on('trail')) {
+      const t = this.val('trail', 'time', 1.2);
+      this._trail = this._trail || [];
+      const last = this._trail[this._trail.length - 1];
+      if (!last || dist2(last.x, last.y, p.x, p.y) > 9) {
+        this._trail.push({ x: p.x, y: p.y, at: g.time });
+      }
+      while (this._trail.length && g.time - this._trail[0].at > t) this._trail.shift();
+    } else if (this._trail) {
+      this._trail.length = 0;
+    }
+
+    // --- часы идут сами ---
+    if (this.on('daytime') && this.val('daytime', 'auto', false)) {
+      const m = this.map.daytime.settings.find(x => x.id === 'hour');
+      m.value = (m.value + dt * 0.4) % 24;
+    }
+
+    // --- магнит лута: пикапы плывут к игроку ---
+    if (this.on('magnet')) {
+      const r = this.val('magnet', 'range', 260);
+      for (const k of g.pickups) {
+        const d = dist(k.x, k.y, p.x, p.y);
+        if (d < 24 || d > r) continue;
+        const pull = 340 * dt * (1 - d / (r * 1.4));
+        k.x += (p.x - k.x) / d * pull * 60 * dt;
+        k.y += (p.y - k.y) / d * pull * 60 * dt;
+      }
+    }
+
     this.killAura(dt);
     this.autoMoney(dt);
     this.aim(dt);
+  },
+
+  /**
+   * Автопилот: машина едет как трафик — держит полосу, тормозит перед
+   * помехами, сворачивает на перекрёстках. Возвращает true, когда ведёт.
+   */
+  autopilot(dt) {
+    const g = this.game;
+    const p = g.player;
+    if (!this.on('autopilot') || p.onFoot || !p.vehicle) {
+      this._apOn = false;
+      return false;
+    }
+    const v = p.vehicle;
+    if (!this._apOn) {
+      this._apOn = true;
+      // Ось и направление берём из текущего курса, полосу — из ближайшей дороги.
+      const a = ((v.angle % TAU) + TAU) % TAU;
+      const horiz = a < Math.PI / 4 || a > TAU - Math.PI / 4 || Math.abs(a - Math.PI) < Math.PI / 4;
+      v.axis = horiz ? 'h' : 'v';
+      v.dir = horiz ? (Math.cos(a) >= 0 ? 1 : -1) : (Math.sin(a) >= 0 ? 1 : -1);
+      const across = horiz ? v.y : v.x;
+      v.lane = City.snapToLane(across) + (v.dir > 0 ? 22 : -22);
+      v.cool = 0.8;
+    }
+    v.cruise = this.val('autopilot', 'speed', 170);
+    v.driveTraffic(dt, g);
+    return true;
+  },
+
+  /** Отметка попадания — рисуется крестиком и тает. */
+  hitmark(x, y) {
+    if (!this.on('hitmarker')) return;
+    this._marks = this._marks || [];
+    this._marks.push({ x, y, life: 0.35 });
+    if (this._marks.length > 40) this._marks.shift();
   },
 
   /** Kill Aura: раз в интервал бьёт ближайшую цель в радиусе. */
@@ -659,6 +778,48 @@ const Cheats = {
       }
     }
 
+    if (this._trail && this._trail.length > 1) {
+      const tr = this._trail;
+      const rainbow = this.val('trail', 'mode', 'Радуга') === 'Радуга';
+      const dur = this.val('trail', 'time', 1.2);
+      ctx.save();
+      ctx.lineCap = 'round';
+      for (let i = 1; i < tr.length; i++) {
+        const age = (g.time - tr[i].at) / dur;
+        ctx.strokeStyle = rainbow
+          ? hsvToCss((i * 14 + performance.now() * 0.12) % 360, 0.8, 1)
+          : this.accent;
+        ctx.globalAlpha = clamp(1 - age, 0, 1) * 0.7;
+        ctx.lineWidth = 2 + (1 - age) * 4;
+        ctx.beginPath();
+        ctx.moveTo(tr[i - 1].x, tr[i - 1].y);
+        ctx.lineTo(tr[i].x, tr[i].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if (this._marks && this._marks.length) {
+      const size = this.val('hitmarker', 'size', 8);
+      ctx.save();
+      ctx.lineWidth = 2.2;
+      for (const m of this._marks) {
+        m.life -= g.dt;
+        const k = clamp(m.life / 0.35, 0, 1);
+        const r = size * (1.6 - k * 0.6);
+        ctx.strokeStyle = '#ffffff';
+        ctx.globalAlpha = k;
+        ctx.beginPath();
+        for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+          ctx.moveTo(m.x + sx * r * 0.35, m.y + sy * r * 0.35);
+          ctx.lineTo(m.x + sx * r, m.y + sy * r);
+        }
+        ctx.stroke();
+      }
+      this._marks = this._marks.filter(m => m.life > 0);
+      ctx.restore();
+    }
+
     if (this.on('killaura')) {
       const r = this.val('killaura', 'range', 130);
       const t = performance.now() * 0.004;
@@ -746,6 +907,61 @@ const Cheats = {
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, g.w, g.h);
       }
+    }
+
+    if (this.on('daytime')) {
+      const hour = this.val('daytime', 'hour', 19);
+      // Полдень светлый, полночь тёмная; сумерки подкрашены закатом.
+      const dark = (1 - Math.cos((hour - 12) / 12 * Math.PI * 2 / 2)) / 2;
+      if (dark > 0.02) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = `rgba(${Math.round(70 - 40 * dark)},${Math.round(70 - 45 * dark)},${Math.round(140 - 30 * dark)},${(dark * 0.75).toFixed(3)})`;
+        ctx.fillRect(0, 0, g.w, g.h);
+        ctx.restore();
+      }
+      const dusk = clamp(1 - Math.abs(hour - 19) / 2.5, 0, 1) + clamp(1 - Math.abs(hour - 5.5) / 2.5, 0, 1);
+      if (dusk > 0.02) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.fillStyle = `rgba(255,120,60,${(dusk * 0.22).toFixed(3)})`;
+        ctx.fillRect(0, 0, g.w, g.h);
+        ctx.restore();
+      }
+    }
+
+    if (this.on('rain')) {
+      const power = this.val('rain', 'power', 0.6);
+      const want = Math.round(power * 130);
+      this._drops = this._drops || [];
+      while (this._drops.length < want) {
+        this._drops.push({ x: rand(-40, g.w), y: rand(0, g.h), sp: rand(500, 900), len: rand(8, 18) });
+      }
+      if (this._drops.length > want) this._drops.length = want;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(160,200,255,.5)';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (const d of this._drops) {
+        d.y += d.sp * dt;
+        d.x += d.sp * 0.22 * dt;
+        if (d.y > g.h + 20) { d.y = rand(-40, -5); d.x = rand(-40, g.w); }
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.len * 0.22, d.y + d.len);
+      }
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(30,50,90,' + (power * 0.13).toFixed(3) + ')';
+      ctx.fillRect(0, 0, g.w, g.h);
+      ctx.restore();
+    } else if (this._drops) {
+      this._drops.length = 0;
+    }
+
+    if (this.on('cinema') && this.val('cinema', 'bars', true)) {
+      const bar = Math.round(g.h * 0.07);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, g.w, bar);
+      ctx.fillRect(0, g.h - bar, g.w, bar);
     }
 
     if (this.on('crosshair')) {
