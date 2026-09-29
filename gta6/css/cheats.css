@@ -1,0 +1,362 @@
+/* ============================================================
+   GTA VI — Click GUI чит-клиента
+   ============================================================ */
+
+.cheat-open {
+  position: absolute;
+  right: max(12px, env(safe-area-inset-right));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  background: rgba(20, 16, 28, .8);
+  color: #c9a6f0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  z-index: 15;
+}
+.cheat-open:active { background: rgba(176, 124, 232, .35); }
+
+/* ------------------------------------------------------------- оверлей -- */
+
+.cg {
+  --cg-accent: #b07ce8;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(6, 4, 12, .55);
+  backdrop-filter: blur(3px);
+  font-family: "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+  color: #e8e4ef;
+}
+.cg.on { display: flex; }
+
+.cg-panel {
+  display: flex;
+  width: min(1000px, 100%);
+  height: min(600px, 88vh);
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(24, 20, 30, .97);
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+}
+
+/* --------------------------------------------------------------- рейл -- */
+
+.cg-rail {
+  width: 62px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  background: rgba(16, 13, 21, .85);
+}
+
+.cg-logo {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 14px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: #1a1020;
+  background: linear-gradient(140deg, #d9b3ff, var(--cg-accent));
+}
+
+.cg-rail-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: #7b7390;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.cg-rail-btn svg { width: 20px; height: 20px; }
+.cg-rail-btn:hover { color: #b6adc9; background: rgba(255, 255, 255, .05); }
+.cg-rail-btn.on { color: var(--cg-accent); background: rgba(255, 255, 255, .08); }
+
+/* -------------------------------------------------------------- шапка -- */
+
+.cg-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.cg-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px 12px;
+  flex: none;
+}
+
+.cg-tabs { display: flex; align-items: baseline; gap: 12px; flex: none; }
+.cg-tab-label { font-size: 14px; color: #7b7390; }
+.cg-tab { font-size: 14px; font-weight: 700; color: #fff; }
+
+.cg-search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .05);
+}
+.cg-search svg { width: 15px; height: 15px; color: #7b7390; flex: none; }
+.cg-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: #e8e4ef;
+  font: inherit;
+  font-size: 13px;
+}
+.cg-search input::placeholder { color: #6f6885; }
+
+.cg-themes { display: flex; gap: 6px; flex: none; }
+.cg-theme {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.cg-theme.on { border-color: #fff; }
+
+.cg-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: rgba(255, 255, 255, .06);
+  color: #9a92ae;
+  font-size: 14px;
+  cursor: pointer;
+}
+.cg-close:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* ------------------------------------------------------------ колонки -- */
+
+.cg-cols {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 4px 20px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .16) transparent;
+}
+.cg-cols::-webkit-scrollbar { width: 6px; }
+.cg-cols::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .16); border-radius: 3px; }
+
+.cg-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  gap: 14px;
+}
+
+.cg-empty { color: #6f6885; margin: 30px auto; font-size: 13px; }
+
+/* ------------------------------------------------------------ карточка -- */
+
+.cg-card {
+  /* flex: none обязателен: в колонке-флексе карточки иначе сжимаются под
+     высоту панели, а их содержимое уезжает за границы и ловит чужие клики. */
+  flex: none;
+  border-radius: 15px;
+  background: rgba(38, 33, 46, .9);
+  border: 1px solid rgba(255, 255, 255, .05);
+  overflow: hidden;
+}
+.cg-card.on { border-color: rgba(255, 255, 255, .1); }
+
+.cg-card-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 15px;
+  cursor: pointer;
+}
+.cg-name { flex: 1; font-size: 14px; font-weight: 600; min-width: 0; }
+
+.cg-key {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9a92ae;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .06);
+  flex: none;
+}
+.cg-card.on .cg-key { color: var(--cg-accent); }
+
+.cg-switch {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 999px;
+  background: #3b3548;
+  flex: none;
+  transition: background .18s ease;
+}
+.cg-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #8a819e;
+  transition: transform .18s ease, background .18s ease;
+}
+.cg-card.on .cg-switch { background: var(--cg-accent); }
+.cg-card.on .cg-switch::after { transform: translateX(16px); background: #fff; }
+
+/* ------------------------------------------------------------ настройки -- */
+
+/* Настройки видны и у выключенного модуля — его можно настроить заранее. */
+.cg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 2px 15px 15px;
+}
+
+.cg-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+}
+.cg-label { font-size: 12.5px; color: #b8b0c9; }
+.cg-value { font-size: 12.5px; font-weight: 600; color: var(--cg-accent); font-variant-numeric: tabular-nums; }
+
+/* Полоса рисуется на 4px, но кликабельна на все 22px: в тонкую линию
+   пальцем не попасть. background-clip держит фон внутри этих 4px. */
+.cg-track {
+  grid-column: 1 / -1;
+  position: relative;
+  box-sizing: content-box;
+  height: 4px;
+  padding: 9px 0;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, .1);
+  background-clip: content-box;
+  cursor: pointer;
+  touch-action: none;
+}
+.cg-fill {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  border-radius: 2px;
+  background: var(--cg-accent);
+}
+.cg-knob {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+  pointer-events: none;
+}
+
+.cg-bool { cursor: pointer; }
+.cg-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a819e;
+  background: rgba(255, 255, 255, .07);
+}
+.cg-bool.yes .cg-check { background: var(--cg-accent); color: #1a1020; }
+
+.cg-modes { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.cg-mode {
+  border: none;
+  border-radius: 7px;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9a92ae;
+  background: transparent;
+  cursor: pointer;
+}
+.cg-mode:hover { color: #d6cfe6; }
+.cg-mode.on { background: color-mix(in srgb, var(--cg-accent) 26%, transparent); color: #fff; }
+
+.cg-swatch {
+  width: 22px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+.cg-bars { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 0; }
+.cg-hue {
+  background-image: linear-gradient(90deg, #f00, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00);
+}
+
+.cg-btn {
+  grid-column: 1 / -1;
+  border: none;
+  border-radius: 9px;
+  padding: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: #1a1020;
+  background: var(--cg-accent);
+  cursor: pointer;
+}
+.cg-btn:active { transform: translateY(1px); }
+
+/* --------------------------------------------------------------- фон --- */
+
+@media (max-width: 860px) {
+  .cg-panel { height: 92vh; border-radius: 18px; }
+  .cg-rail { width: 52px; padding: 12px 0; }
+  .cg-logo { width: 32px; height: 32px; margin-bottom: 10px; font-size: 17px; }
+  .cg-rail-btn { width: 36px; height: 36px; }
+  .cg-head { padding: 12px 14px 10px; gap: 10px; flex-wrap: wrap; }
+  .cg-tabs { order: 1; }
+  .cg-themes { order: 2; margin-left: auto; }
+  .cg-close { order: 2; }
+  .cg-search { order: 3; flex-basis: 100%; height: 34px; }
+  .cg-cols { padding: 4px 14px 16px; gap: 10px; }
+}

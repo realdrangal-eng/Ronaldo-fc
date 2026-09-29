@@ -22,12 +22,16 @@ const Game = {
   particles: [],
   pickups: [],
 
+  cheats: null,
+  trafficCap: null,
+  dt: 0,
   camX: 0, camY: 0,
   shake: 0,
   wanted: 0,
   wantedHeat: 0,
   panic: 0,
   copTimer: 0,
+  character: CHARACTERS.migrant,
   mission: null,
   missionMarker: null,
   toast: null,
@@ -43,6 +47,9 @@ const Game = {
     City.build();
     this.reset();
     UI.init(this);
+    // Чит-клиент есть только в отдельной сборке; в чистой его файлы вырезаны.
+    this.cheats = (typeof Cheats !== 'undefined') ? Cheats : null;
+    if (this.cheats) this.cheats.init(this);
     this.last = performance.now();
     requestAnimationFrame(t => this.frame(t));
   },
@@ -70,19 +77,21 @@ const Game = {
     this.toast = null;
     this.stats = { kills: 0, earned: 0, best: 0, distance: 0 };
 
+    const ch = this.character;
     this.player = {
       x: 3 * BLOCK + 22, y: 4 * BLOCK, angle: 0,
-      r: 8, hp: 100, maxHp: 100, armor: 0, cash: 500,
+      r: 8, hp: ch.hp, maxHp: ch.hp, armor: ch.armor, cash: ch.cash,
       onFoot: true, vehicle: null,
       fireCool: 0, walk: 0, enterCool: 0,
-      skin: SKINS[0], shirt: '#f2f2f7', pants: '#2b3350'
+      skin: ch.skin, shirt: ch.shirt, pants: ch.pants
     };
 
     this.camX = this.player.x;
     this.camY = this.player.y;
 
-    // A car waiting at the kerb, so the first thing you can do is drive.
-    const start = new Vehicle(3 * BLOCK + 22, 4 * BLOCK + 54, -Math.PI / 2, 'sports', '#35d0d6');
+    // Стартовая машина у обочины — зависит от персонажа.
+    const start = new Vehicle(3 * BLOCK + 22, 4 * BLOCK + 54, -Math.PI / 2,
+                              ch.startVehicle, ch.startColor);
     this.vehicles.push(start);
 
     this.placeMissionMarker();
@@ -191,21 +200,30 @@ const Game = {
     this.wanted = clamp(this.wanted + n, 0, 5);
     this.wantedHeat = 14;
     if (this.wanted > before) {
-      this.say(this.wanted >= 4 ? 'The whole department is on you!' : 'Wanted level up', 2200);
+      this.say(this.wanted >= 4 ? 'Вас ищет весь отдел!' : 'Уровень розыска вырос', 2200);
     }
   },
 
   onPedKilled(ped) {
+    const ch = this.character;
     this.stats.kills++;
-    if (ped.cash > 0) this.pickups.push(new Pickup(ped.x, ped.y, 'cash', ped.cash));
     this.panic = 3;
-    if (ped.isCop) this.addWanted(this.wanted < 3 ? 3 - this.wanted : 1);
-    else if (this.wanted < 2) this.addWanted(2 - this.wanted);
-    else this.wantedHeat = 14;
 
-    if (this.mission && this.mission.type === 'rampage') {
-      this.mission.done++;
-      if (this.mission.done >= this.mission.need) this.finishMission(true);
+    const loot = Math.round(ped.cash * ch.lootMultiplier) + ch.bountyFor(ped);
+    if (loot > 0) this.pickups.push(new Pickup(ped.x, ped.y, 'cash', loot));
+
+    // Сколько звёзд стоит эта цель — решает персонаж.
+    const stars = ch.wantedFor(ped);
+    if (stars > this.wanted) this.addWanted(stars - this.wanted);
+    else if (stars > 0) this.wantedHeat = 14;
+
+    const m = this.mission;
+    if (m && m.type === 'rampage') {
+      m.done++;
+      if (m.done >= m.need) this.finishMission(true);
+    } else if (m && m.type === 'raid' && ped.criminal) {
+      m.done++;
+      if (m.done >= m.need) this.finishMission(true);
     }
   },
 
@@ -214,6 +232,7 @@ const Game = {
   frame(now) {
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
+    this.dt = dt;
     if (this.state === 'play') {
       this.time += dt;
       this.update(dt);
@@ -228,6 +247,9 @@ const Game = {
     this.panic = Math.max(0, this.panic - dt);
     this.shake = Math.max(0, this.shake - dt * 14);
 
+    if (this.cheats) this.cheats.update(dt);
+    const frozen = this.cheats && this.cheats.on('freeze');
+
     this.updatePlayer(dt);
 
     // Vehicles
@@ -238,7 +260,8 @@ const Game = {
       } else if (v.driver === 'cop') {
         v.drivePolice(dt, p.x, p.y);
       } else if (v.driver === 'traffic') {
-        v.driveTraffic(dt, this);
+        if (frozen) { v.throttle = 0; v.brake = true; }
+        else v.driveTraffic(dt, this);
       } else {
         v.throttle = 0;
         v.steer = 0;
@@ -249,7 +272,7 @@ const Game = {
     }
     this.vehicleCollisions(dt);
 
-    for (const ped of this.peds) ped.update(dt, this);
+    if (!frozen) for (const ped of this.peds) ped.update(dt, this);
     for (const b of this.bullets) { b.update(dt); this.bulletHits(b); }
     for (const q of this.particles) q.update(dt);
     for (const k of this.pickups) {
@@ -278,27 +301,43 @@ const Game = {
     const inp = Input.axes;
     const mag = Math.hypot(inp.x, inp.y);
 
+    const C = this.cheats;
+
     if (p.onFoot) {
-      const sp = 132;
+      const boost = (C && C.on('speed')) ? C.val('speed', 'foot', 1) : 1;
+      const sp = 132 * this.character.footSpeed * boost;
       if (mag > 0.12) {
         p.x += (inp.x / mag) * sp * dt * Math.min(mag, 1);
         p.y += (inp.y / mag) * sp * dt * Math.min(mag, 1);
         p.angle = Math.atan2(inp.y, inp.x);
         p.walk += sp * dt * 0.15;
       }
-      for (const b of City.near(p.x, p.y, p.r + 2)) resolveCircleRect(p, p.r, b);
+      if (!(C && C.on('noclip'))) {
+        for (const b of City.near(p.x, p.y, p.r + 2)) resolveCircleRect(p, p.r, b);
+      }
       p.x = clamp(p.x, 6, WORLD_W - 6);
       p.y = clamp(p.y, 6, WORLD_H - 6);
 
       // Aim at the pointer on desktop, at the heading on touch.
-      if (Input.aimActive) p.angle = Math.atan2(Input.aim.y - p.y, Input.aim.x - p.x);
+      // Аимбот уже выставил угол, так что мышь его не перебивает.
+      if (Input.aimActive && !(C && C.on('aimbot'))) {
+        p.angle = Math.atan2(Input.aim.y - p.y, Input.aim.x - p.x);
+      }
 
       if (Input.fire && p.fireCool <= 0) {
-        p.fireCool = 0.14;
-        this.spawnBullet(p.x, p.y, p.angle + rand(-0.05, 0.05), 780, 'player', 26);
+        p.fireCool = (C && C.on('rapidfire')) ? C.val('rapidfire', 'rate', 0.04) : 0.14;
+        const dmg = 26 * ((C && C.on('damage')) ? C.val('damage', 'mult', 1) : 1);
+        const shots = (C && C.on('multishot')) ? C.val('multishot', 'count', 1) : 1;
+        const spread = (C && C.on('multishot')) ? C.val('multishot', 'spread', 0) : 0;
+        for (let i = 0; i < shots; i++) {
+          const off = shots === 1 ? rand(-0.05, 0.05)
+            : (i / (shots - 1) - 0.5) * spread * 2;
+          this.spawnBullet(p.x, p.y, p.angle + off, 780, 'player', dmg);
+        }
       }
     } else if (p.vehicle) {
       const v = p.vehicle;
+      v.speedMul = (C && C.on('speed')) ? C.val('speed', 'car', 1) : 1;
       v.throttle = -inp.y;                 // up = forward
       v.steer = inp.x;
       v.brake = Input.brake;
@@ -454,7 +493,7 @@ const Game = {
         this.wanted--;
         this.wantedHeat = 9;
         if (this.wanted === 0) {
-          this.say('You lost the cops', 2600);
+          this.say('Вы оторвались', 2600);
           if (this.mission && this.mission.type === 'escape') this.finishMission(true);
         }
       } else {
@@ -498,8 +537,7 @@ const Game = {
   },
 
   startMission() {
-    const kinds = ['delivery', 'rampage', 'escape'];
-    const type = pick(kinds);
+    const type = pick(this.character.missions);
     this.missionMarker = null;
 
     if (type === 'delivery') {
@@ -513,18 +551,22 @@ const Game = {
         stops.push(pt || { x: BLOCK * (i + 2), y: BLOCK * 2 });
       }
       this.mission = { type, stops, at: 0, timer: 105, reward: 3000,
-        title: 'DROP-OFF', desc: 'Hit all 3 drops before the clock runs out.' };
-      this.say('Mission: DROP-OFF', 3000);
+        title: 'ДОСТАВКА', desc: 'Успей на все 3 точки.' };
+      this.say('Миссия: ДОСТАВКА', 3000);
     } else if (type === 'rampage') {
       this.mission = { type, need: 8, done: 0, timer: 70, reward: 2500,
-        title: 'RAMPAGE', desc: 'Take out 8 targets.' };
+        title: 'БЕСПРЕДЕЛ', desc: 'Убери 8 целей.' };
       this.addWanted(2);
-      this.say('Mission: RAMPAGE', 3000);
+      this.say('Миссия: БЕСПРЕДЕЛ', 3000);
+    } else if (type === 'raid') {
+      this.mission = { type, need: 5, done: 0, timer: 90, reward: 3500,
+        title: 'ОБЛАВА', desc: 'Возьми 5 отмеченных преступников.' };
+      this.say('Миссия: ОБЛАВА', 3000);
     } else {
       this.mission = { type, timer: 90, reward: 4000,
-        title: 'GETAWAY', desc: 'Shake off the cops.' };
+        title: 'ПОБЕГ', desc: 'Оторвись от полиции.' };
       this.addWanted(3);
-      this.say('Mission: GETAWAY', 3000);
+      this.say('Миссия: ПОБЕГ', 3000);
     }
   },
 
@@ -545,7 +587,7 @@ const Game = {
       if (s && dist(this.player.x, this.player.y, s.x, s.y) < 40) {
         m.at++;
         if (m.at >= m.stops.length) this.finishMission(true);
-        else this.say('Drop ' + m.at + ' of ' + m.stops.length, 1800);
+        else this.say('Точка ' + m.at + ' из ' + m.stops.length, 1800);
       }
     }
   },
@@ -556,9 +598,9 @@ const Game = {
     if (win) {
       this.player.cash += m.reward;
       this.stats.earned += m.reward;
-      this.say('MISSION PASSED  +' + fmtMoney(m.reward), 3600);
+      this.say('МИССИЯ ПРОЙДЕНА  +' + fmtMoney(m.reward), 3600);
     } else {
-      this.say('MISSION FAILED', 3000);
+      this.say('МИССИЯ ПРОВАЛЕНА', 3000);
     }
     this.mission = null;
     setTimeout(() => { if (!this.mission) this.placeMissionMarker(); }, 2500);
@@ -611,9 +653,10 @@ const Game = {
       return d < DESPAWN_R;
     });
 
+    const cap = this.trafficCap == null ? MAX_TRAFFIC : this.trafficCap;
     let traffic = 0;
     for (const v of this.vehicles) if (v.driver === 'traffic') traffic++;
-    if (traffic < MAX_TRAFFIC && chance(0.35)) this.spawnTraffic(false);
+    if (traffic < cap && chance(0.35)) this.spawnTraffic(false);
 
     let civ = 0;
     for (const q of this.peds) if (!q.dead && !q.isCop) civ++;
@@ -675,7 +718,10 @@ const Game = {
     for (const b of this.bullets) b.draw(ctx);
 
     City.drawDetail(ctx, view, this.time * 1000);
+    if (this.cheats) this.cheats.drawWorld(ctx);
     ctx.restore();
+
+    if (this.cheats) this.cheats.drawScreen(ctx, this.dt);
   },
 
   drawMarkers(ctx) {

@@ -22,6 +22,9 @@ class Ped {
     this.shirt = pick(SHIRTS);
     this.pants = chance(0.5) ? '#2f3550' : '#4a4152';
     this.cash = randInt(15, 120);
+    // Помеченные преступники — законные цели для игрока-полицейского.
+    this.criminal = chance(CRIMINAL_RATE);
+    if (this.criminal) this.shirt = pick(['#8a2230', '#7a2f5a', '#5c2a6b']);
   }
 
   update(dt, world) {
@@ -115,6 +118,23 @@ class Ped {
     ctx.fill();
 
     ctx.restore();
+
+    if (this.criminal && !this.isCop) this.drawCriminalMark(ctx);
+  }
+
+  /** Ромб над головой: цель, за которую полиции платят. */
+  drawCriminalMark(ctx) {
+    ctx.save();
+    ctx.translate(this.x, this.y - 14);
+    ctx.fillStyle = '#ff3b47';
+    ctx.beginPath();
+    ctx.moveTo(0, -4);
+    ctx.lineTo(3.4, 0);
+    ctx.lineTo(0, 4);
+    ctx.lineTo(-3.4, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 }
 
@@ -124,6 +144,7 @@ class Cop extends Ped {
     this.hp = 60;
     this.shirt = '#1f2b52';
     this.pants = '#141a30';
+    this.criminal = false;
     this.speed = 82;
     this.fireCool = rand(0.4, 1.2);
     this.isCop = true;

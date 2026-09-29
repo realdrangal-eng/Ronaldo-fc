@@ -101,6 +101,18 @@ if grep -rqE '(src|href)="https?://' "$BUILD/assets/www"; then
   grep -rnE '(src|href)="https?://' "$BUILD/assets/www" >&2
   exit 1
 fi
+# Чистая сборка выкидывает чит-клиент: файлы и ссылки на них в index.html.
+for pattern in ${APP_STRIP:-}; do
+  removed=$(find "$BUILD/assets/www" -name "$pattern" -print -delete | wc -l)
+  # Убираем <script>/<link>, указывающие на вырезанное.
+  sed -i "/\(src\|href\)=\"[^\"]*${pattern%.*}\./d" "$BUILD/assets/www/index.html"
+  echo "    вырезано по '$pattern': $removed файл(ов)"
+done
+if [ -n "${APP_STRIP:-}" ] && grep -qE '(src|href)="[^"]*cheats' "$BUILD/assets/www/index.html"; then
+  echo "ERROR: ссылки на чит-клиент остались в index.html" >&2
+  exit 1
+fi
+
 echo "    staged $(find "$BUILD/assets/www" -type f | wc -l) files, $(du -sh "$BUILD/assets/www" | cut -f1)"
 
 # Fill the manifest, strings and shell from the app config.

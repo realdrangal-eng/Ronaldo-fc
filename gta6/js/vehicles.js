@@ -35,6 +35,7 @@ class Vehicle {
     this.maxHp = def.hp;
     this.driver = null;        // null | 'player' | 'traffic' | 'cop'
     this.foot = false;         // cruiser has already dropped officers
+    this.speedMul = 1;         // множитель от чита «Скорость»
     this.dead = false;
     this.burning = 0;
 
@@ -65,10 +66,11 @@ class Vehicle {
     let lat = -this.vx * fy + this.vy * fx;
 
     const d = this.def;
-    fwd += this.throttle * d.accel * dt;
+    const mul = this.speedMul || 1;
+    fwd += this.throttle * d.accel * mul * dt;
     if (this.brake) fwd *= Math.pow(0.02, dt);
     fwd *= Math.pow(0.55, dt);                       // rolling drag
-    fwd = clamp(fwd, -d.max * 0.45, d.max);
+    fwd = clamp(fwd, -d.max * 0.45 * mul, d.max * mul);
 
     // Handbrake breaks traction and lets the car slide.
     const grip = this.brake ? 0.55 : 0.008;

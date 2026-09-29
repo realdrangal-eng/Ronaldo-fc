@@ -9,18 +9,26 @@ Two apps are configured, described by the files in [`apps/`](apps):
 | App | Source | Package | APK |
 | --- | --- | --- | --- |
 | `gta6` | [`gta6/`](../gta6) — GTA VI: Vice Beach | `com.vicebeach.game` | `vice-beach.apk` |
+| `gta6-cheat` | то же плюс чит-клиент | `com.vicebeach.cheat` | `vice-beach-cheat.apk` |
 | `rockstar-shop` | [`rockstar-shop/`](../rockstar-shop) — the storefront | `com.rockstarshop.store` | `rockstar-shop.apk` |
 
 ## Build
 
 ```bash
 ./android/build.sh gta6            # -> android/build/vice-beach.apk
+./android/build.sh gta6-cheat      # -> android/build/vice-beach-cheat.apk
 ./android/build.sh rockstar-shop   # -> android/build/rockstar-shop.apk
 ```
 
+Каждая сборка начинается с `rm -rf android/build`, так что собирайте по
+одной или копируйте готовый APK перед следующим запуском. У чистой и
+чит-сборки разные package id, поэтому они ставятся на телефон рядом.
+
 `gta6` is the default when no app is named. To add another, drop a `.conf` in
 `apps/` naming the source directory, package id, label and icon — the WebView
-shell in `src/` is shared.
+shell in `src/` is shared. `APP_STRIP` перечисляет файлы, которые нужно
+выкинуть из сборки: они удаляются из `assets/www`, а ссылки на них
+вычищаются из `index.html` (так чистая сборка игры остаётся без читов).
 
 First run downloads the toolchain (~30 MB) into `android/.tools/` and caches it.
 

@@ -38,6 +38,8 @@ const UI = {
       missionTimer: id('missionTimer'),
       toast: id('toast'),
       title: id('title'),
+      picker: id('picker'),
+      picked: id('picked'),
       wasted: id('wasted'),
       wastedStats: id('wastedStats'),
       pause: id('pause'),
@@ -64,7 +66,7 @@ const UI = {
       if (e.code === 'KeyF' || e.code === 'KeyE') Input.enter = true;
       if (e.code === 'Space') { Input.brake = true; e.preventDefault(); }
       if (e.code === 'Escape') this.togglePause();
-      if (e.code === 'Enter' && this.game.state === 'title') this.start();
+      if (e.code === 'Enter' && this.game.state === 'title') this.showPicker();
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
       this.readKeys();
     };
@@ -179,25 +181,59 @@ const UI = {
       const b = document.getElementById(id);
       if (b) b.addEventListener('click', fn);
     };
-    on('btnPlay', () => this.start());
+    on('btnPlay', () => this.showPicker());
+    on('btnPickBack', () => {
+      this.el.picker.classList.remove('on');
+      this.el.title.classList.add('on');
+    });
     on('btnRespawn', () => { this.el.wasted.classList.remove('on'); this.game.respawn(); });
     on('btnResume', () => this.togglePause());
     on('btnPause', () => this.togglePause());
     on('btnQuit', () => {
       this.el.pause.classList.remove('on');
+      this.el.picker.classList.remove('on');
       this.el.title.classList.add('on');
       this.el.hud.classList.remove('on');
       this.game.state = 'title';
     });
   },
 
-  start() {
+  /** Экран выбора персонажа: карточки строятся из CHARACTERS. */
+  showPicker() {
     this.el.title.classList.remove('on');
+    this.el.picker.classList.add('on');
+    if (this.el.picked.childElementCount) return;
+
+    for (const key of CHARACTER_ORDER) {
+      const ch = CHARACTERS[key];
+      const card = document.createElement('button');
+      card.className = 'pick';
+      card.style.setProperty('--pick', ch.accent);
+      card.innerHTML =
+        `<span class="pick-role">${ch.role}</span>` +
+        `<span class="pick-name">${ch.name}</span>` +
+        `<span class="pick-blurb">${ch.blurb}</span>` +
+        `<span class="pick-perks">${ch.perks.map(t => `<i>${t}</i>`).join('')}</span>` +
+        `<span class="pick-stats">` +
+          `<b>HP</b> ${ch.hp}<b>БРОНЯ</b> ${ch.armor}<b>$</b> ${ch.cash}` +
+        `</span>` +
+        `<span class="pick-go">ИГРАТЬ</span>`;
+      card.addEventListener('click', () => this.start(key));
+      this.el.picked.appendChild(card);
+    }
+  },
+
+  start(characterKey) {
+    const g = this.game;
+    g.character = CHARACTERS[characterKey] || CHARACTERS.migrant;
+
+    this.el.title.classList.remove('on');
+    this.el.picker.classList.remove('on');
     this.el.hud.classList.add('on');
-    this.game.reset();
-    this.game.state = 'play';
-    this.game.last = performance.now();
-    this.game.say('Find the yellow marker to start a job', 4200);
+    g.reset();
+    g.state = 'play';
+    g.last = performance.now();
+    g.say('Ищи жёлтый маркер, чтобы взять работу', 4200);
   },
 
   togglePause() {
@@ -248,11 +284,10 @@ const UI = {
     if (m) {
       this.el.mission.classList.add('on');
       this.el.missionTitle.textContent = m.title;
-      this.el.missionDesc.textContent = m.type === 'rampage'
-        ? `Targets ${m.done}/${m.need}`
-        : m.type === 'delivery'
-          ? `Drop ${m.at + 1} of ${m.stops.length}`
-          : m.desc;
+      this.el.missionDesc.textContent =
+        (m.type === 'rampage' || m.type === 'raid') ? `Цели ${m.done}/${m.need}`
+        : m.type === 'delivery' ? `Точка ${m.at + 1} из ${m.stops.length}`
+        : m.desc;
       const s = Math.max(0, Math.ceil(m.timer));
       this.el.missionTimer.textContent =
         String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');

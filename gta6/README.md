@@ -6,6 +6,25 @@ dependencies, no server.
 
 Open `index.html` in a browser, or install the APK (see [`../android`](../android)).
 
+## Персонажи
+
+В начале игры — экран выбора. От персонажа зависят характеристики,
+стартовая машина, правила розыска и набор миссий.
+
+| | Мигрант | Полиция |
+| --- | --- | --- |
+| HP / броня | 100 / 0 | 130 / 50 |
+| Стартовые деньги | $500 | $1200 |
+| Машина | Alvino V1 | крузер с мигалками |
+| Бег | +14% | обычный |
+| Розыск | за любое убийство | только за мирных и коллег |
+| Добыча | ×1.6 с прохожих | премия за преступников |
+| Миссии | ДОСТАВКА, БЕСПРЕДЕЛ, ПОБЕГ | ОБЛАВА, ДОСТАВКА, ПОБЕГ |
+
+Часть прохожих помечена красным ромбом — это преступники. За игру полицией
+они дают премию и не поднимают розыск; стрельба по мирным, наоборот, сразу
+даёт три звезды.
+
 ## Playing
 
 | | Keyboard | Touch |
@@ -20,6 +39,22 @@ Open `index.html` in a browser, or install the APK (see [`../android`](../androi
 Walk up to any car and take it. Yellow markers start a job; teal markers are
 drop-offs. Crime raises the wanted level — the cops escalate with each star and
 give up once you break line of sight for long enough.
+
+## Чит-клиент
+
+Отдельная сборка (`android/apps/gta6-cheat.conf`) с Click GUI в стиле
+игровых чит-клиентов: открывается кнопкой **∞** на экране или **RSHIFT** /
+**~** на клавиатуре, закрывается крестиком, фоном или тем же хоткеем.
+
+Пять категорий: Визуалы (ESP, трейсеры, цветной мир, прицел, инфо-панель),
+Бой (аимбот, быстрая стрельба, урон, мульти-выстрел), Движение (скорость,
+без стен, телепорт правой кнопкой, прилипание), Игрок (бессмертие,
+авто-лечение, нет розыска, деньги), Мир (спавн машин, заморозка NPC, хаос,
+плотность трафика). Есть поиск по модулям и десять цветовых тем.
+
+В чистой сборке `js/cheats.js` и `css/cheats.css` вырезаются на этапе
+сборки (`APP_STRIP`), вместе со ссылками на них; кнопка ∞ создаётся самим
+чит-клиентом, так что в чистом APK её нет.
 
 ## What's simulated
 
@@ -37,8 +72,11 @@ give up once you break line of sight for long enough.
 ```
 gta6/
   index.html        page, HUD markup, title/pause/wasted screens
-  css/style.css     HUD, touch pad and menus
+  css/style.css     HUD, touch pad, меню и выбор персонажа
+  css/cheats.css    Click GUI (нет в чистой сборке)
   js/util.js        math, collision resolution, formatting
+  js/characters.js  мигрант и полиция: статы, розыск, миссии
+  js/cheats.js      чит-клиент и Click GUI (нет в чистой сборке)
   js/city.js        block generation, road grid, pseudo-3D building rendering
   js/vehicles.js    vehicle physics, traffic and pursuit AI, car rendering
   js/entities.js    pedestrians, police on foot, bullets, particles, pickups
