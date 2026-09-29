@@ -9,14 +9,14 @@ Two apps are configured, described by the files in [`apps/`](apps):
 | App | Source | Package | APK |
 | --- | --- | --- | --- |
 | `gta6` | [`gta6/`](../gta6) — GTA VI: Vice Beach | `com.vicebeach.game` | `vice-beach.apk` |
-| `gta6-cheat` | то же плюс чит-клиент | `com.vicebeach.cheat` | `vice-beach-cheat.apk` |
+| `gta6-cheat` | то же плюс чит-клиент Nursultan | `com.vicebeach.cheat` | `nursultan-client.apk` |
 | `rockstar-shop` | [`rockstar-shop/`](../rockstar-shop) — the storefront | `com.rockstarshop.store` | `rockstar-shop.apk` |
 
 ## Build
 
 ```bash
 ./android/build.sh gta6            # -> android/build/vice-beach.apk
-./android/build.sh gta6-cheat      # -> android/build/vice-beach-cheat.apk
+./android/build.sh gta6-cheat      # -> android/build/nursultan-client.apk
 ./android/build.sh rockstar-shop   # -> android/build/rockstar-shop.apk
 ```
 

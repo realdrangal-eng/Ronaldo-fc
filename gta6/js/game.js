@@ -312,7 +312,7 @@ const Game = {
         p.angle = Math.atan2(inp.y, inp.x);
         p.walk += sp * dt * 0.15;
       }
-      if (!(C && C.on('noclip'))) {
+      if (!(C && (C.on('noclip') || C.on('automoney')))) {
         for (const b of City.near(p.x, p.y, p.r + 2)) resolveCircleRect(p, p.r, b);
       }
       p.x = clamp(p.x, 6, WORLD_W - 6);

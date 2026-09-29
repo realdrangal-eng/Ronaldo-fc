@@ -67,6 +67,11 @@ const CHEAT_MODULES = [
     { id: 'count',  name: 'Пуль',   type: 'slider', min: 2, max: 12, step: 1, value: 5 },
     { id: 'spread', name: 'Разброс', type: 'slider', min: 0, max: 0.6, step: 0.02, value: 0.18 }
   ]},
+  { id: 'killaura', name: 'Kill Aura', cat: 'combat', settings: [
+    { id: 'range',  name: 'Радиус',   type: 'slider', min: 40, max: 300, step: 5, value: 130 },
+    { id: 'rate',   name: 'Интервал', type: 'slider', min: 0.1, max: 1.5, step: 0.05, value: 0.4 },
+    { id: 'target', name: 'Цель', type: 'mode', options: ['Все', 'Преступники', 'Копы'], value: 'Все' }
+  ]},
 
   /* --------------------------------------------------------- движение -- */
   { id: 'speed', name: 'Скорость', cat: 'movement', settings: [
@@ -85,6 +90,10 @@ const CHEAT_MODULES = [
     { id: 'rate', name: 'Скорость', type: 'slider', min: 1, max: 60, step: 1, value: 25 }
   ]},
   { id: 'nowanted', name: 'Нет розыска', cat: 'player', settings: [] },
+  { id: 'automoney', name: 'AutoMoney', cat: 'player', settings: [
+    { id: 'speed', name: 'Скорость полёта', type: 'slider', min: 150, max: 900, step: 10, value: 450 },
+    { id: 'rob',   name: 'Грабить прохожих', type: 'bool', value: true }
+  ]},
   { id: 'money', name: 'Деньги', cat: 'player', settings: [
     { id: 'amount', name: 'Сумма', type: 'slider', min: 1000, max: 500000, step: 1000, value: 50000 },
     { id: 'give',   name: 'Выдать', type: 'button', label: 'ВЫДАТЬ' },
@@ -144,6 +153,8 @@ const Cheats = {
 
   init(game) {
     this.game = game;
+    this.logo = new Image();
+    this.logo.src = 'assets/nursultan.png';
     for (const m of CHEAT_MODULES) {
       m.on = !!m.on;
       m.key = m.key || 'n/a';
@@ -169,8 +180,8 @@ const Cheats = {
     const btn = document.createElement('button');
     btn.id = 'btnCheat';
     btn.className = 'cheat-open';
-    btn.setAttribute('aria-label', 'Чит-меню');
-    btn.textContent = '∞';
+    btn.setAttribute('aria-label', 'Nursultan Client');
+    btn.innerHTML = '<img src="assets/nursultan.png" alt="N">';
     const fire = e => { e.preventDefault(); e.stopPropagation(); this.toggle(); };
     btn.addEventListener('click', fire);
     btn.addEventListener('touchstart', fire, { passive: false });
@@ -214,7 +225,7 @@ const Cheats = {
     root.innerHTML = `
       <div class="cg-panel">
         <div class="cg-rail">
-          <div class="cg-logo">∞</div>
+          <div class="cg-logo" title="Nursultan Client"><img src="assets/nursultan.png" alt="Nursultan"></div>
           ${CHEAT_CATEGORIES.map(c => `
             <button class="cg-rail-btn" data-cat="${c.id}" title="${c.name}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -226,7 +237,7 @@ const Cheats = {
         <div class="cg-main">
           <div class="cg-head">
             <div class="cg-tabs">
-              <span class="cg-tab-label">Рендер</span>
+              <span class="cg-brand">Nursultan</span>
               <span class="cg-tab" id="cgCatName">Визуалы</span>
             </div>
             <label class="cg-search">
@@ -491,7 +502,102 @@ const Cheats = {
       v.vy = fy * fwd + fx * lat;
     }
 
+    this.killAura(dt);
+    this.autoMoney(dt);
     this.aim(dt);
+  },
+
+  /** Kill Aura: раз в интервал бьёт ближайшую цель в радиусе. */
+  killAura(dt) {
+    this._kaCool = Math.max(0, (this._kaCool || 0) - dt);
+    if (!this.on('killaura') || this._kaCool > 0) return;
+
+    const g = this.game;
+    const p = g.player;
+    const range = this.val('killaura', 'range', 130);
+    const filter = this.val('killaura', 'target', 'Все');
+
+    let best = null, bd = range * range;
+    for (const q of g.peds) {
+      if (q.dead) continue;
+      if (filter === 'Преступники' && !q.criminal) continue;
+      if (filter === 'Копы' && !q.isCop) continue;
+      const d = dist2(q.x, q.y, p.x, p.y);
+      if (d < bd) { bd = d; best = q; }
+    }
+    if (!best) return;
+
+    this._kaCool = this.val('killaura', 'rate', 0.4);
+    p.angle = Math.atan2(best.y - p.y, best.x - p.x);
+    best.hit(9999, g);
+  },
+
+  /**
+   * AutoMoney: бот берёт управление и летает по карте — подбирает кэш,
+   * грабит прохожих, между делом кружит по городу. Стены его не волнуют.
+   */
+  autoMoney(dt) {
+    if (!this.on('automoney')) return;
+    const g = this.game;
+    const p = g.player;
+
+    // Бот рулит сам — ручной ввод глушим.
+    Input.axes.x = 0;
+    Input.axes.y = 0;
+
+    let tx = 0, ty = 0, mode = 'wander', mark = null;
+    let bd = Infinity;
+    for (const k of g.pickups) {
+      if (k.kind !== 'cash') continue;
+      const d = dist2(k.x, k.y, p.x, p.y);
+      if (d < bd) { bd = d; tx = k.x; ty = k.y; mode = 'pickup'; }
+    }
+    if (mode === 'wander' && this.val('automoney', 'rob', true)) {
+      bd = Infinity;
+      for (const q of g.peds) {
+        if (q.dead || q.isCop || q.cash <= 0) continue;
+        const d = dist2(q.x, q.y, p.x, p.y);
+        if (d < bd) { bd = d; mark = q; mode = 'rob'; }
+      }
+      if (mark) { tx = mark.x; ty = mark.y; }
+    }
+    if (mode === 'wander') {
+      if (!this._amT || dist(p.x, p.y, this._amT.x, this._amT.y) < 60) {
+        this._amT = { x: rand(120, SHORE_X - 120), y: rand(120, WORLD_H - 120) };
+      }
+      tx = this._amT.x;
+      ty = this._amT.y;
+    }
+
+    const d = dist(p.x, p.y, tx, ty);
+    const sp = this.val('automoney', 'speed', 450);
+    if (d > 1) {
+      const step = Math.min(sp * dt, d);
+      p.angle = Math.atan2(ty - p.y, tx - p.x);
+      p.x += Math.cos(p.angle) * step;
+      p.y += Math.sin(p.angle) * step;
+      p.walk += sp * dt * 0.12;
+      if (chance(0.4)) {
+        g.particles.push(new Particle(
+          p.x - Math.cos(p.angle) * 10, p.y - Math.sin(p.angle) * 10,
+          rand(-25, 25), rand(-25, 25), 0.3, '#6ef2a0', 2));
+      }
+    }
+    // Машина, если сидим в ней, летит следом.
+    if (p.vehicle) {
+      const v = p.vehicle;
+      v.x = p.x; v.y = p.y; v.vx = 0; v.vy = 0; v.angle = p.angle;
+    }
+
+    if (mode === 'rob' && mark && dist(p.x, p.y, mark.x, mark.y) < 26) {
+      const take = mark.cash;
+      mark.cash = 0;
+      mark.state = 'flee';
+      mark.timer = 2.5;
+      p.cash += take;
+      g.stats.earned += take;
+      g.particles.push(new Particle(mark.x, mark.y, 0, -40, 0.5, '#6ef2a0', 3));
+    }
   },
 
   /** Аимбот: наводит игрока на ближайшую цель в секторе. */
@@ -551,6 +657,22 @@ const Cheats = {
                    v.driver === 'cop' ? '#4f8bff' : '#e8e04b', dot);
         }
       }
+    }
+
+    if (this.on('killaura')) {
+      const r = this.val('killaura', 'range', 130);
+      const t = performance.now() * 0.004;
+      ctx.save();
+      ctx.strokeStyle = this.accent;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.55;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, t, t + 1.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, t + Math.PI, t + Math.PI + 1.2);
+      ctx.stroke();
+      ctx.restore();
     }
 
     if (this.on('tracers')) {
@@ -666,15 +788,26 @@ const Cheats = {
         ctx.save();
         ctx.font = '600 12px system-ui, sans-serif';
         ctx.textBaseline = 'middle';
-        const text = lines.join('   ');
-        const w = ctx.measureText(text).width + 22;
+        const text = 'nursultan   ' + lines.join('   ');
+        const w = ctx.measureText(text).width + 34;
+        const x0 = g.w / 2 - w / 2;
         ctx.fillStyle = 'rgba(14,11,24,.72)';
-        roundRect(ctx, g.w / 2 - w / 2, 8, w, 24, 8);
+        roundRect(ctx, x0, 8, w, 24, 8);
         ctx.fill();
+        if (this.logo && this.logo.complete && this.logo.naturalWidth) {
+          ctx.save();
+          roundRect(ctx, x0 + 6, 12, 16, 16, 4);
+          ctx.clip();
+          ctx.drawImage(this.logo, x0 + 6, 12, 16, 16);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = this.accent;
+          ctx.fillText('N', x0 + 9, 21);
+        }
         ctx.fillStyle = this.accent;
-        ctx.fillText('∞', g.w / 2 - w / 2 + 9, 21);
+        ctx.fillText('nursultan', x0 + 28, 21);
         ctx.fillStyle = '#e8e4ef';
-        ctx.fillText(text, g.w / 2 - w / 2 + 22, 21);
+        ctx.fillText(text.slice('nursultan'.length), x0 + 28 + ctx.measureText('nursultan').width, 21);
         ctx.restore();
       }
     }
